@@ -1,0 +1,9 @@
+# MCP Python SDK (Model Context Protocol) - SSE & Streamable HTTP
+mcp[cli]>=1.26.0
+
+# Microsoft Graph & OneNote
+msgraph-sdk>=1.0.0
+azure-identity>=1.15.0
+
+# Config
+python-dotenv>=1.0.0
