@@ -71,6 +71,16 @@ uv sync
 4. In `.env`: set `AZURE_CLIENT_ID`; optionally `AZURE_TENANT_ID` and `AZURE_REDIRECT_URI` (default `http://localhost:8400`).
 5. For **application** (app-only) auth instead: add **Application** permission `Notes.Read.All`, create a client secret, and set `ONENOTE_USER_ID`.
 
+### Enterprise: admin consent
+
+In **work or school (organization)** tenants, your IT admin may need to **grant consent** for the app before you can access OneNote. If you see an error like *"Need admin approval"* or *"Need permission to access resources in your organization that only an admin can grant"*:
+
+1. **Ask your admin** to grant consent for the app (your app’s **Application (client) ID** from Azure).
+2. **Admin steps** (Azure Portal): **App registrations** → select the app → **API permissions** → click **Grant admin consent for &lt;Your org&gt;**.
+3. Alternatively, the admin can use **Enterprise applications** → select the app → **Permissions** → **Grant admin consent**.
+
+After admin consent is granted, sign in again (or run the MCP server again); the app will then have permission to access OneNote on behalf of users in your organization.
+
 ### 3. Environment
 
 ```bash
