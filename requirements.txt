@@ -1,6 +1,9 @@
 # FastMCP with Azure OAuth2 (AzureProvider + OBO)
 fastmcp[azure]
 
+# Required by azure-identity for async OBO token exchange
+aiohttp>=3.9.0
+
 # HTTP client for Graph API calls
 httpx>=0.27.0
 

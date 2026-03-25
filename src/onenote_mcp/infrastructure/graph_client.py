@@ -117,37 +117,35 @@ class GraphOneNoteGateway(OneNoteGateway):
         notebooks = [Notebook.from_graph(item) for item in raw]
         seen_ids = {n.id for n in notebooks}
 
-        try:
-            groups_data = await self._get_json(f"{GRAPH_BASE}/me/memberOf")
-            for g in groups_data.get("value", []):
-                otype = g.get("@odata.type", "")
-                gid = g.get("id")
-                if not gid or "group" not in otype.lower():
-                    continue
-                try:
-                    gdata = await self._get_json(
-                        f"{GRAPH_BASE}/groups/{gid}/onenote/notebooks"
-                    )
-                    for item in gdata.get("value", []):
-                        nb = Notebook.from_graph(item)
-                        if nb.id not in seen_ids:
-                            notebooks.append(nb)
-                            seen_ids.add(nb.id)
-                except httpx.HTTPStatusError:
-                    continue
-        except httpx.HTTPStatusError:
-            pass
+        for gid in await self._get_group_ids():
+            try:
+                gdata = await self._get_json(
+                    f"{GRAPH_BASE}/groups/{gid}/onenote/notebooks"
+                )
+                for item in gdata.get("value", []):
+                    nb = Notebook.from_graph(item)
+                    if nb.id not in seen_ids:
+                        notebooks.append(nb)
+                        seen_ids.add(nb.id)
+            except httpx.HTTPStatusError:
+                continue
 
         return notebooks
 
     async def _get_group_ids(self) -> list[str]:
+        """Return IDs of unified (Microsoft 365) groups the user belongs to.
+
+        Only unified groups can have OneNote notebooks. Security groups,
+        distribution lists, etc. are skipped. Returns an empty list when
+        the caller lacks Group.Read.All permission.
+        """
         try:
-            data = await self._get_json(f"{GRAPH_BASE}/me/memberOf")
-            return [
-                g["id"]
-                for g in data.get("value", [])
-                if g.get("id") and "group" in g.get("@odata.type", "").lower()
-            ]
+            data = await self._get_json(
+                f"{GRAPH_BASE}/me/memberOf/microsoft.graph.group"
+                "?$filter=groupTypes/any(t:t eq 'Unified')"
+                "&$select=id"
+            )
+            return [g["id"] for g in data.get("value", []) if g.get("id")]
         except httpx.HTTPStatusError:
             return []
 
