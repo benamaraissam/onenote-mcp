@@ -22,16 +22,26 @@ class Notebook:
     sections_url: str
     created_date_time: str | None
     last_modified_date_time: str | None
+    user_role: str | None = None
+    is_shared: bool | None = None
 
     @classmethod
     def from_graph(cls, data: dict[str, Any]) -> "Notebook":
+        role = _get(data, "user_role", "userRole")
+        if role is not None:
+            role = str(role).strip()
+        is_shared = _get(data, "is_shared", "isShared")
+        if is_shared is not None and not isinstance(is_shared, bool):
+            is_shared = str(is_shared).lower() in ("true", "1")
         return cls(
             id=data["id"],
             display_name=_get(data, "display_name", "displayName") or "",
             self_url=_get(data, "self_url", "self") or "",
-            sections_url=_get(data, "sections_url", "sections_url") or "",
-            created_date_time=_get(data, "created_date_time", "created_date_time"),
-            last_modified_date_time=_get(data, "last_modified_date_time", "last_modified_date_time"),
+            sections_url=_get(data, "sections_url", "sectionsUrl", "sections_url") or "",
+            created_date_time=_get(data, "created_date_time", "createdDateTime"),
+            last_modified_date_time=_get(data, "last_modified_date_time", "lastModifiedDateTime"),
+            user_role=role,
+            is_shared=is_shared,
         )
 
 
