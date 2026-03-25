@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 import os
 
 from fastmcp import FastMCP
 from fastmcp.server.auth.providers.azure import AzureProvider, EntraOBOToken
+
+logging.getLogger("fastmcp").setLevel(logging.DEBUG)
 
 from onenote_mcp.application.use_cases import (
     get_note_content,
