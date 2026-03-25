@@ -4,11 +4,15 @@ import os
 
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+
+    # Later entries in .env override earlier ones (and override stale shell vars).
+    load_dotenv(override=True)
 except ImportError:
     pass
 
 from onenote_mcp.server import mcp
+
+app = mcp.http_app()
 
 
 def main() -> None:
