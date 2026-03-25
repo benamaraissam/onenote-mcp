@@ -26,9 +26,10 @@ GRAPH_SCOPES = [
 ]
 
 tenant_id = os.environ["AZURE_TENANT_ID"]
+client_id = os.environ["AZURE_CLIENT_ID"]
 
 auth = AzureProvider(
-    client_id=os.environ["AZURE_CLIENT_ID"],
+    client_id=client_id,
     client_secret=os.environ["AZURE_CLIENT_SECRET"],
     tenant_id=tenant_id,
     base_url=os.environ.get("MCP_BASE_URL", "http://localhost:8000"),
@@ -36,13 +37,17 @@ auth = AzureProvider(
     additional_authorize_scopes=GRAPH_SCOPES + ["offline_access"],
 )
 
-# AzureProvider hardcodes the v2.0 issuer, but enterprise app registrations
-# with accessTokenVersion=null (default) emit v1 tokens whose issuer is
-# https://sts.windows.net/{tenant}//.  Accept both so it works regardless
-# of the manifest setting.
+# AzureProvider targets v2 tokens only. Enterprise app registrations with
+# accessTokenVersion=null (default) emit v1 tokens that differ in both
+# issuer (https://sts.windows.net/{tenant}/) and audience (api://{client_id}).
+# Accept both formats so it works regardless of the manifest setting.
 auth._token_validator.issuer = [
     f"https://login.microsoftonline.com/{tenant_id}/v2.0",
     f"https://sts.windows.net/{tenant_id}/",
+]
+auth._token_validator.audience = [
+    client_id,
+    f"api://{client_id}",
 ]
 
 mcp = FastMCP("OneNote", auth=auth)
